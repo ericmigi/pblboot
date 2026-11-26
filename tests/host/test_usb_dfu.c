@@ -216,14 +216,19 @@ static void test_timeout_policy_and_complete_install(void)
 {
 	host_reset();
 	prepare_image(1055, true);
-	assert(pb_usb_dfu_run(true) == 0);
+	int event = setjmp(host_event_jmp);
+	if (event == 0) {
+		(void)pb_usb_dfu_run(true);
+		assert(!"idle timeout must reset the USB peripheral before boot");
+	}
+	assert(event == HOST_REBOOT);
 	assert(host_disconnects == 1 && host_tinyusb_inits == 1);
 	assert(host_now_ms > CONFIG_PB_USB_DFU_IDLE_TIMEOUT_MS);
 	assert(!pb_bootbit_tst(PB_BOOTBIT_NEW_FW_AVAILABLE));
 
 	host_reset();
 	host_task_limit = 2 * CONFIG_PB_USB_DFU_TRANSFER_TIMEOUT_MS;
-	int event = setjmp(host_event_jmp);
+	event = setjmp(host_event_jmp);
 	if (event == 0) {
 		(void)pb_usb_dfu_run(false);
 		assert(!"DFU exited without a valid image");

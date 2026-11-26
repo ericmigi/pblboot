@@ -134,10 +134,13 @@ static void test_explicit_dfu_timeout_only_when_healthy(void)
 	host_reset();
 	healthy_internal();
 	host_bootbits |= BIT(PB_BOOTBIT_FORCE_DFU);
-	assert(boot_once() == HOST_JUMP);
+	assert(boot_once() == HOST_REBOOT);
 	assert(host_now_ms >= CONFIG_PB_USB_DFU_IDLE_TIMEOUT_MS);
-	assert(host_jump_address == 0x8000U);
+	assert(host_jump_address == 0);
 	assert(!(host_bootbits & BIT(PB_BOOTBIT_FORCE_DFU)));
+	assert(host_tinyusb_inits == 1);
+	assert(boot_once() == HOST_JUMP);
+	assert(host_jump_address == 0x8000U);
 	assert(host_tinyusb_inits == 1);
 
 	host_reset();

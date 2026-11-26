@@ -55,7 +55,7 @@ BUILD_ASSERT(DFU_ERASE_SECTOR_COUNT <= 256U);
 BUILD_ASSERT((DFU_TRANSFER_SIZE % DFU_WRITE_SIZE) == 0U);
 
 extern void pb_tinyusb_nrf52_init(void);
-extern void pb_tinyusb_nrf52_start(void);
+extern void pb_tinyusb_nrf52_poll(void);
 
 static const struct device *const external_flash = DEVICE_DT_GET(DT_CHOSEN(pb_external_flash));
 static uint32_t erased_sectors[DFU_ERASE_BITMAP_WORDS];
@@ -349,16 +349,16 @@ int pb_usb_dfu_run(bool allow_timeout)
 		return -EIO;
 	}
 	irq_enable(USBD_IRQn);
-	pb_tinyusb_nrf52_start();
 
 	while (!manifest_complete) {
+		pb_tinyusb_nrf52_poll();
 		tud_task();
 		int64_t now = k_uptime_get();
 		int64_t timeout_ms = transfer_active ? CONFIG_PB_USB_DFU_TRANSFER_TIMEOUT_MS :
 						    CONFIG_PB_USB_DFU_IDLE_TIMEOUT_MS;
 
 		if (allow_timeout && (now - last_activity_ms) > timeout_ms) {
-			LOG_INF("USB DFU timeout; continuing normal boot");
+			LOG_INF("USB DFU timeout; restarting for normal boot");
 			break;
 		}
 
@@ -369,12 +369,16 @@ int pb_usb_dfu_run(bool allow_timeout)
 	if (!manifest_complete) {
 		dcd_disconnect(0);
 		dcd_int_disable(0);
+		/* The app expects a reset USBD. Dropping the pull-up alone leaves
+		 * ENABLE set and the already-consumed READY event cannot recur. */
+		sys_reboot(SYS_REBOOT_WARM);
 		return 0;
 	}
 
 	/* dfu-util waits another second before its final status poll and USB reset. */
 	const int64_t reboot_at = k_uptime_get() + CONFIG_PB_USB_DFU_POLLTIMEOUT_MS + 2000;
 	while (k_uptime_get() < reboot_at) {
+		pb_tinyusb_nrf52_poll();
 		tud_task();
 		(void)pb_watchdog_feed();
 		k_sleep(K_MSEC(1));

@@ -34,3 +34,8 @@ foreach(suite firmware usb_dfu boot_flow)
   endif()
   add_test(NAME ${suite} COMMAND test_${suite})
 endforeach()
+
+add_executable(test_nrf52_usb_power test_nrf52_usb_power.c
+  "${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/tinyusb/port/nrf52.c")
+target_include_directories(test_nrf52_usb_power PRIVATE include)
+add_test(NAME nrf52_usb_power COMMAND test_nrf52_usb_power)

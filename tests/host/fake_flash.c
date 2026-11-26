@@ -215,7 +215,7 @@ void k_sleep(int32_t milliseconds)
 	host_now_ms += milliseconds;
 }
 void pb_tinyusb_nrf52_init(void) { host_tinyusb_inits++; }
-void pb_tinyusb_nrf52_start(void) {}
+void pb_tinyusb_nrf52_poll(void) {}
 bool tusb_init(uint8_t rhport, const tusb_rhport_init_t *init)
 {
 	assert(rhport == 0 && init->role == TUSB_ROLE_DEVICE);
