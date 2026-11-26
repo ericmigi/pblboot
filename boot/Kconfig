@@ -38,7 +38,7 @@ config PB_USB_DFU
 
 config PB_USB_DFU_POLLTIMEOUT_MS
 	int "USB DFU poll timeout (ms)"
-	default 50
+	default 5
 	depends on PB_USB_DFU
 	help
 	  Timeout reported to the host for flash writes and erases.

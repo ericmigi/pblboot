@@ -23,7 +23,8 @@
 #define CFG_TUD_DFU 1
 #define CFG_TUD_DFU_RUNTIME 0
 
-#define CFG_TUD_DFU_XFER_BUFSIZE 256
+/* One external flash erase sector per DFU block */
+#define CFG_TUD_DFU_XFER_BUFSIZE 4096
 #define CFG_TUD_MEM_ALIGN __attribute__((aligned(4)))
 
 #endif /* TUSB_CONFIG_H */
