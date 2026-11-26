@@ -32,7 +32,8 @@ LOG_MODULE_DECLARE(pblboot, CONFIG_PBLBOOT_LOG_LEVEL);
 
 #define SCRATCH_ADDR DT_REG_ADDR(DT_CHOSEN(pb_firmware_scratch))
 #define SCRATCH_SIZE DT_REG_SIZE(DT_CHOSEN(pb_firmware_scratch))
-#define DFU_ERASE_SIZE 4096U
+/* One 64 KiB block erase is much faster than sixteen 4 KiB sector erases */
+#define DFU_ERASE_SIZE 65536U
 #define DFU_WRITE_SIZE 4U
 #define DFU_TRANSFER_SIZE CFG_TUD_DFU_XFER_BUFSIZE
 #define DFU_ERASE_SECTOR_COUNT (SCRATCH_SIZE / DFU_ERASE_SIZE)
